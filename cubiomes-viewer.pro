@@ -20,7 +20,7 @@ greaterThan(QT_MAJOR_VERSION, 5) {
     DEFINES += QT_DISABLE_DEPRECATED_UP_TO=0x050F00
 } else {
     QMAKE_CXXFLAGS += -std=gnu++11
-    gcc {
+    equals(QMAKE_CXX, g++) {
         QMAKE_CXXFLAGS += -Wno-deprecated-copy
     }
 }
