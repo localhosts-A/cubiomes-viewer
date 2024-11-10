@@ -20,6 +20,9 @@ greaterThan(QT_MAJOR_VERSION, 5) {
     DEFINES += QT_DISABLE_DEPRECATED_UP_TO=0x050F00
 } else {
     QMAKE_CXXFLAGS += -std=gnu++11
+    gcc {
+        QMAKE_CXXFLAGS += -Wno-deprecated-copy
+    }
 }
 
 win32: {
@@ -52,10 +55,6 @@ wasm: {
 
 static_gnu: {
     LIBS += -static -static-libgcc -static-libstdc++
-}
-
-gcc {
-    greaterThan(QMAKE_GCC_MAJOR_VERSION, 9): QMAKE_CXXFLAGS += -Wno-deprecated-copy
 }
 
 CONFIG(debug, debug|release): {

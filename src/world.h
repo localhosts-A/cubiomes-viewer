@@ -58,6 +58,7 @@ struct Quad : public Scheduled
     ~Quad();
 
     void run();
+    void updateBiomeColor();
 
     WorldInfo wi;
     int dim;
@@ -70,6 +71,7 @@ struct Quad : public Scheduled
     int blocks;
     int pixs;
     int sopt;
+    Range r;
 
     int *biomes;
     uchar *rgb;

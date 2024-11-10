@@ -1735,10 +1735,10 @@ L_qm_any:
         {
             for (int rx = rx1; rx <= rx2; rx++)
             {
-                if (cond->skipref && rx == at.x >> 4 && rz == at.z >> 4)
-                    continue;
                 if (isSlimeChunk(env->seed, rx, rz))
                 {
+                    if (cond->skipref && rx == at.x >> 4 && rz == at.z >> 4)
+                        continue;
                     if (cond->count == 0)
                     {
                         return COND_FAILED;

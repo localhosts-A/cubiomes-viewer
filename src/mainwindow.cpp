@@ -361,7 +361,7 @@ bool MainWindow::getSeed(WorldInfo *wi, bool applyrand)
     bool ok = true;
     const std::string& mcs = ui->comboBoxMC->currentText().toStdString();
     wi->mc = str2mc(mcs.c_str());
-    if (wi->mc < 0)
+    if (wi->mc == MC_UNDEF)
     {
         if (applyrand)
             qDebug() << "Unknown MC version: " << mcs.c_str();
@@ -386,13 +386,6 @@ bool MainWindow::getSeed(WorldInfo *wi, bool applyrand)
 
 bool MainWindow::setSeed(WorldInfo wi, int dim)
 {
-    const char *mcstr = mc2str(wi.mc);
-    if (!mcstr)
-    {
-        qDebug() << "Unknown MC version: " << wi.mc;
-        return false;
-    }
-
     if (dim == DIM_OVERWORLD)
         dimactions[0]->setChecked(true);
     if (dim == DIM_NETHER)
@@ -440,7 +433,7 @@ bool MainWindow::setSeed(WorldInfo wi, int dim)
         ui->comboY->addItem(QString::number(wi.y));
     ui->comboY->setCurrentIndex(i);
 
-    ui->comboBoxMC->setCurrentText(mcstr);
+    ui->comboBoxMC->setCurrentText(mc2str(wi.mc));
     ui->seedEdit->setText(QString::asprintf("%" PRId64, (int64_t)wi.seed));
     getMapView()->setSeed(wi, dim, lopt);
 
@@ -703,12 +696,10 @@ void MainWindow::setMCList(bool experimental)
     {
         if (!experimental && mc != wi.mc)
         {
-            if (mc <= MC_1_0 || mc == MC_1_16_1 || mc == MC_1_19_2 || mc == MC_1_21_3)
+            if (mc <= MC_1_0 || mc == MC_1_16_1 || mc == MC_1_19_2 || mc == MC_1_21_1 || mc == MC_1_21_WD)
                 continue;
         }
-        const char *mcs = mc2str(mc);
-        if (mcs)
-            mclist.append(mcs);
+        mclist.append(mc2str(mc));
     }
     const QString s = mc2str(wi.mc);
     ui->comboBoxMC->setEnabled(false);

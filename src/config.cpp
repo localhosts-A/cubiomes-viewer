@@ -91,7 +91,7 @@ bool WorldInfo::read(const QString& line)
     if (sscanf(p, "#MC:       %8[^\n]", buf) == 1)
     {
         mc = str2mc(buf);
-        if (mc < 0)
+        if (mc == MC_UNDEF)
             mc = MC_DEFAULT;
         return true;
     }
