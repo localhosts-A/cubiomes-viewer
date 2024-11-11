@@ -379,6 +379,41 @@ void applyHeightShading(unsigned char *rgb, Range r,
     }
 }
 
+void Quad::updateBiomeColor()
+{
+    if (!biomes || !rgb)
+        return;
+    int nptype = -1;
+    if (g->mc >= MC_1_18) nptype = g->bn.nptype;
+    if (g->mc <= MC_B1_7) nptype = g->bnb.nptype;
+    if (dim == DIM_OVERWORLD && nptype >= 0)
+    {   // climate parameter
+        const int *extremes = getBiomeParaExtremes(g->mc);
+        int cmin = extremes[nptype*2 + 0];
+        int cmax = extremes[nptype*2 + 1];
+        for (int i = 0; i < r.sx * r.sz; i++)
+        {
+            double p = (biomes[i] - cmin) / (double) (cmax - cmin);
+            uchar col = (p <= 0) ? 0 : (p >= 1.0) ? 0xff : (uchar)(0xff * p);
+            rgb[3*i+0] = rgb[3*i+1] = rgb[3*i+2] = col;
+        }
+    }
+    else
+    {
+        biomesToImage(rgb, g_biomeColors, biomes, r.sx, r.sz, 1, 1);
+
+        if (lopt.mode == LOPT_HEIGHT)
+        {
+            int stepbits = 0; // interpolated_step = (1 << stepbits)
+            if (scale > 16)
+            {
+                stepbits = 1;
+            }
+            applyHeightShading(rgb, r, g, sn, stepbits, lopt.disp[lopt.mode], false, isdel);
+        }
+    }
+}
+
 void Quad::run()
 {
     if (done || *isdel)
@@ -398,7 +433,8 @@ void Quad::run()
 
         int y = (scale > 1) ? wi.y >> 2 : wi.y;
         int x = ti*pixs, z = tj*pixs, w = pixs, h = pixs;
-        Range r = {scale, x, z, w, h, y, 1};
+        r = {scale, x, z, w, h, y, 1};
+
         biomes = allocCache(g, r);
         if (!biomes) return;
 
@@ -415,39 +451,8 @@ void Quad::run()
                 biomes[i] = -1;
         }
 
-        rgb = new uchar[w*h * 3];
-        int nptype = -1;
-        if (g->mc >= MC_1_18) nptype = g->bn.nptype;
-        if (g->mc <= MC_B1_7) nptype = g->bnb.nptype;
-        if (dim == DIM_OVERWORLD && nptype >= 0)
-        {   // climate parameter
-            const int *extremes = getBiomeParaExtremes(g->mc);
-            int cmin = extremes[nptype*2 + 0];
-            int cmax = extremes[nptype*2 + 1];
-            for (int i = 0; i < w*h; i++)
-            {
-                double p = (biomes[i] - cmin) / (double) (cmax - cmin);
-                uchar col = (p <= 0) ? 0 : (p >= 1.0) ? 0xff : (uchar)(0xff * p);
-                rgb[3*i+0] = rgb[3*i+1] = rgb[3*i+2] = col;
-            }
-        }
-        else
-        {
-            // sync biomeColors
-            g_mutex.lock();
-            g_mutex.unlock();
-            biomesToImage(rgb, g_biomeColors, biomes, w, h, 1, 1);
-
-            if (lopt.mode == LOPT_HEIGHT)
-            {
-                int stepbits = 0; // interpolated_step = (1 << stepbits)
-                if (scale > 16)
-                {
-                    stepbits = 1;
-                }
-                applyHeightShading(rgb, r, g, sn, stepbits, lopt.disp[lopt.mode], false, isdel);
-            }
-        }
+        rgb = new uchar[w*h * 3]();
+        updateBiomeColor();
         img = new QImage(rgb, w, h, 3*w, QImage::Format_RGB888);
     }
     else if (pixs < 0)
@@ -914,25 +919,16 @@ int QWorld::estimateSurface(Pos p)
     return (int) floor(y);
 }
 
-static void refreshQuadColor(Quad *q)
-{
-    QImage *img = q->img;
-    if (!img)
-        return;
-    if (q->lopt.mode <= LOPT_OCEAN_256 || q->g->mc < MC_1_18 || q->dim != 0 || q->g->bn.nptype < 0)
-        biomesToImage(q->rgb, g_biomeColors, q->biomes, img->width(), img->height(), 1, 1);
-}
-
 void QWorld::refreshBiomeColors()
 {
     QMutexLocker locker(&g_mutex);
     for (Level& l : lvb)
     {
         for (Quad *q : l.cells)
-            refreshQuadColor(q);
+            q->updateBiomeColor();
     }
     for (Quad *q : cachedbiomes)
-        refreshQuadColor(q);
+        q->updateBiomeColor();
 }
 
 void QWorld::clear()

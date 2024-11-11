@@ -506,7 +506,7 @@ static const struct FilterList : private FilterInfo
         };
 
         list[F_CHAMBERS] = FilterInfo{
-            CAT_STRUCT, 1, LOC_RAD, Trial_Chambers, 1, BR_CLUST, MC_1_21, MC_NEWEST, 0, 0, disp++,
+            CAT_STRUCT, 1, LOC_RAD, Trial_Chambers, 1, BR_CLUST, MC_1_21_1, MC_NEWEST, 0, 0, disp++,
             "chambers",
             QT_TRANSLATE_NOOP("Filter", "Trial chambers"),
             ""

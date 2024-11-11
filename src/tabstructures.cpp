@@ -67,15 +67,10 @@ void AnalysisStructures::runStructs(Generator *g)
         if (!getStructureConfig_override(stype, wi.mc, &sconf))
             continue;
 
-        int sdim = DIM_OVERWORLD;
-        if (sconf.properties & STRUCT_NETHER)
-            sdim = DIM_NETHER;
-        if (sconf.properties & STRUCT_END)
-            sdim = DIM_END;
-        if (dim != DIM_UNDEF && dim != sdim)
+        if (dim != DIM_UNDEF && dim != sconf.dim)
             continue;
 
-        getStructs(&st, sconf, wi, sdim, area.x1, area.z1, area.x2, area.z2);
+        getStructs(&st, sconf, wi, sconf.dim, area.x1, area.z1, area.x2, area.z2);
         if (st.empty())
             continue;
 
@@ -94,7 +89,7 @@ void AnalysisStructures::runStructs(Generator *g)
             item->setData(C_X, Qt::DisplayRole, QVariant::fromValue(vp.p.x));
             item->setData(C_Z, Qt::DisplayRole, QVariant::fromValue(vp.p.z));
             item->setData(0, Qt::UserRole+0, QVariant::fromValue(wi.seed));
-            item->setData(0, Qt::UserRole+1, QVariant::fromValue(sdim));
+            item->setData(0, Qt::UserRole+1, QVariant::fromValue(sconf.dim));
             item->setData(0, Qt::UserRole+2, QVariant::fromValue(vp.p));
             QStringList sinfo = vp.detail();
             if (!sinfo.empty())

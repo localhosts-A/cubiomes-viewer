@@ -42,8 +42,7 @@ ConditionDialog::ConditionDialog(FormConditions *parent, MapView *mapview, Confi
     textDescription->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
     ui->collapseDescription->init(tr("Description/Notes"), textDescription, true);
 
-    const char *p_mcs = mc2str(wi.mc);
-    QString mcs = tr("MC %1", "Minecraft version").arg(p_mcs ? p_mcs : "?");
+    QString mcs = tr("MC %1", "Minecraft version").arg(mc2str(wi.mc));
     ui->labelMC->setText(mcs);
 #if QT_VERSION < QT_VERSION_CHECK(5, 10, 0)
     ui->textEditLua->setTabStopWidth(txtWidth(ui->textEditLua->font(), "    "));
